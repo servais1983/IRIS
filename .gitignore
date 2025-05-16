@@ -1,0 +1,37 @@
+# Créer un fichier .gitignore pour le projet IRIS
+
+# Dossier evidence contenant les fichiers d'investigation (données sensibles)
+/evidence/
+
+# Fichiers Python compilés
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Environnements virtuels
+venv/
+env/
+ENV/
+
+# Fichiers de logs
+*.log
+
+# Fichiers temporaires du système
+.DS_Store
+Thumbs.db
+
+# Fichiers IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Fichiers de configuration locaux
+.env
+config.local.yaml
