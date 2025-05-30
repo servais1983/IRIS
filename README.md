@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/5a5c5eb6-bbed-4430-8aaa-4187be7c1530)
+![image](iris.png)
 
 
 # 🧠 IRIS – Incident Response Intelligent System
