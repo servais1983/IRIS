@@ -1,0 +1,128 @@
+# Configuration du monitoring IRIS
+
+# Paramètres généraux
+general:
+  log_level: INFO
+  metrics_interval: 60  # secondes
+  retention_days: 30
+  backup_enabled: true
+  backup_path: /var/backup/iris/metrics
+
+# Seuils d'alerte
+thresholds:
+  cpu:
+    warning: 70
+    critical: 85
+  memory:
+    warning: 75
+    critical: 90
+  disk:
+    warning: 80
+    critical: 95
+  network:
+    warning: 1000000  # 1 MB/s
+    critical: 5000000  # 5 MB/s
+
+# Métriques à collecter
+metrics:
+  system:
+    - cpu_usage
+    - memory_usage
+    - disk_usage
+    - network_traffic
+    - process_count
+  security:
+    - failed_logins
+    - suspicious_ips
+    - malware_detections
+    - unauthorized_access
+  performance:
+    - response_time
+    - throughput
+    - error_rate
+    - queue_length
+
+# Configuration Prometheus
+prometheus:
+  enabled: true
+  port: 9090
+  path: /metrics
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Configuration des alertes
+alerts:
+  email:
+    enabled: true
+    smtp_server: smtp.example.com
+    smtp_port: 587
+    from_address: iris@example.com
+    to_addresses:
+      - admin@example.com
+      - security@example.com
+  slack:
+    enabled: true
+    webhook_url: https://hooks.slack.com/services/xxx/yyy/zzz
+    channel: #iris-alerts
+  pagerduty:
+    enabled: false
+    api_key: your-api-key
+    service_key: your-service-key
+
+# Configuration du logging
+logging:
+  file:
+    path: /var/log/iris/monitoring.log
+    max_size: 100MB
+    backup_count: 5
+  syslog:
+    enabled: true
+    facility: local0
+    priority: info
+
+# Configuration des rapports
+reports:
+  daily:
+    enabled: true
+    time: "00:00"
+    format: pdf
+    recipients:
+      - admin@example.com
+  weekly:
+    enabled: true
+    day: monday
+    time: "00:00"
+    format: pdf
+    recipients:
+      - management@example.com
+  monthly:
+    enabled: true
+    day: 1
+    time: "00:00"
+    format: pdf
+    recipients:
+      - executive@example.com
+
+# Configuration des tableaux de bord
+dashboards:
+  grafana:
+    enabled: true
+    url: http://localhost:3000
+    api_key: your-api-key
+  kibana:
+    enabled: true
+    url: http://localhost:5601
+    index_pattern: iris-*
+
+# Configuration des plugins
+plugins:
+  custom_metrics:
+    enabled: true
+    path: /etc/iris/plugins
+  external_integrations:
+    enabled: true
+    providers:
+      - name: datadog
+        api_key: your-api-key
+      - name: newrelic
+        license_key: your-license-key 

@@ -1,0 +1,158 @@
+# Configuration IRIS - Incident Response Intelligent System
+
+# Paramètres généraux
+general:
+  log_level: INFO
+  log_file: /opt/iris/logs/iris.log
+  evidence_dir: /opt/iris/evidence
+  temp_dir: /opt/iris/temp
+  max_parallel_tasks: 4
+  timeout: 300  # secondes
+
+# Configuration de l'analyse mémoire
+memory_analysis:
+  volatility_plugins:
+    - pslist
+    - pstree
+    - dlllist
+    - handles
+    - netscan
+    - connections
+    - cmdline
+    - envars
+    - filescan
+    - malfind
+  yara_rules_dir: /opt/iris/config/yara
+  memory_dump_size: 8GB
+  analysis_timeout: 1800  # secondes
+
+# Configuration réseau
+network:
+  capture_interfaces:
+    - eth0
+    - wlan0
+  capture_filter: "not port 22"
+  max_packet_size: 65535
+  promiscuous_mode: true
+  packet_timeout: 60
+  max_capture_size: 1GB
+  ports_to_monitor:
+    - 80
+    - 443
+    - 445
+    - 3389
+    - 22
+
+# Configuration de la collecte d'artefacts
+artifact_collection:
+  system_files:
+    - /etc/passwd
+    - /etc/shadow
+    - /etc/hosts
+    - /etc/resolv.conf
+    - /var/log/auth.log
+    - /var/log/syslog
+    - /var/log/apt/history.log
+  process_info:
+    - ps
+    - top
+    - netstat
+    - lsof
+  network_info:
+    - ifconfig
+    - route
+    - iptables
+    - arp
+
+# Configuration de la threat intelligence
+threat_intel:
+  api_keys:
+    virustotal: "YOUR_VT_API_KEY"
+    alienvault: "YOUR_OTX_API_KEY"
+    abuseipdb: "YOUR_ABUSEIPDB_API_KEY"
+  sources:
+    - virustotal
+    - alienvault
+    - abuseipdb
+    - threatfox
+    - urlhaus
+  cache_duration: 86400  # secondes
+  max_requests_per_minute: 60
+
+# Configuration du reporting
+reporting:
+  formats:
+    - pdf
+    - html
+    - json
+  template_dir: /opt/iris/config/templates
+  output_dir: /opt/iris/reports
+  include_sections:
+    - executive_summary
+    - timeline
+    - artifacts
+    - network_analysis
+    - memory_analysis
+    - threat_intel
+    - recommendations
+
+# Configuration de la sécurité
+security:
+  encryption:
+    algorithm: AES-256-GCM
+    key_rotation: 86400  # secondes
+  authentication:
+    method: jwt
+    token_expiry: 3600  # secondes
+  access_control:
+    admin_users:
+      - root
+      - iris
+    restricted_dirs:
+      - /opt/iris/evidence
+      - /opt/iris/logs
+
+# Configuration des alertes
+alerts:
+  email:
+    smtp_server: smtp.gmail.com
+    smtp_port: 587
+    sender: iris@yourdomain.com
+    recipients:
+      - admin@yourdomain.com
+      - soc@yourdomain.com
+  slack:
+    webhook_url: "YOUR_SLACK_WEBHOOK_URL"
+    channel: "#iris-alerts"
+  severity_levels:
+    - critical
+    - high
+    - medium
+    - low
+
+# Configuration du monitoring
+monitoring:
+  metrics:
+    - cpu_usage
+    - memory_usage
+    - disk_usage
+    - network_traffic
+    - process_count
+  prometheus:
+    enabled: true
+    port: 9090
+  grafana:
+    enabled: true
+    port: 3000
+
+# Configuration des plugins
+plugins:
+  enabled:
+    - network_analyzer
+    - memory_analyzer
+    - artifact_collector
+    - threat_intel
+    - report_generator
+  plugin_dir: /opt/iris/plugins
+  auto_update: true
+  update_interval: 86400  # secondes 

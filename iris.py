@@ -1,45 +1,97 @@
 #!/usr/bin/env python3
+"""
+IRIS - Outil d'Analyse de Mémoire et de Sécurité
+"""
 
-import argparse
-from core import analyze, collect, contain, intel, report, utils
+import os
+import sys
+import logging
+from pathlib import Path
+from datetime import datetime
+from core.analyze import MemoryAnalyzer
+from core.monitor import SecurityMonitor
+from core.report import ReportGenerator
+
+def setup_logging():
+    """Configure le système de logging."""
+    log_dir = Path("logs")
+    log_dir.mkdir(exist_ok=True)
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_dir / f"iris_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"),
+            logging.StreamHandler()
+        ]
+    )
 
 def main():
-    parser = argparse.ArgumentParser(description="IRIS - Incident Response Intelligent System")
-    parser.add_argument("--mode", choices=["quick", "full", "forensic"], default="full", 
-                        help="Mode d'exécution: rapide, complet ou forensique")
-    parser.add_argument("--output", default="investigation", 
-                        help="Préfixe du dossier de sortie pour les preuves collectées")
-    args = parser.parse_args()
-
-    # Initialiser la session et créer le dossier d'investigation
-    investigation_id = utils.init_session(args.output)
-    utils.log_event(investigation_id, "INVESTIGATION_START", {"mode": args.mode})
+    """Fonction principale."""
+    # Configuration
+    setup_logging()
+    logger = logging.getLogger(__name__)
     
-    print(f"[+] Démarrage investigation IRIS - ID: {investigation_id}, Mode: {args.mode}")
-
-    if args.mode in ["full", "forensic"]:
-        # Analyse mémoire pour détecter les processus suspects
-        analyze.memory_forensics(investigation_id)
+    # Création des dossiers nécessaires
+    output_dir = Path("reports")
+    output_dir.mkdir(exist_ok=True)
+    
+    try:
+        # Initialisation de l'analyseur
+        logger.info("Initialisation de l'analyseur...")
+        analyzer = MemoryAnalyzer(
+            output_dir=output_dir,
+            log_file=output_dir / "analysis.log"
+        )
         
-        # Collecte des artefacts système
-        collect.artifact_collection(investigation_id)
+        # Analyse des processus
+        logger.info("Analyse des processus en cours...")
+        suspicious_processes = analyzer.analyze_processes()
+        logger.info(f"Processus suspects détectés: {len(suspicious_processes)}")
+        for proc in suspicious_processes:
+            logger.warning(f"Processus suspect: {proc.name} (PID: {proc.pid})")
+            logger.warning(f"Raisons: {', '.join(proc.suspicious_reasons)}")
         
-        # Contenir les adresses IP suspectes
-        contain.network_containment(investigation_id, ["192.168.1.100", "10.0.0.5"])
+        # Analyse réseau
+        logger.info("Analyse des connexions réseau...")
+        network_results = analyzer.analyze_network()
+        logger.info(f"Connexions suspectes détectées: {len(network_results)}")
+        for conn in network_results:
+            if isinstance(conn, dict):
+                logger.warning(
+                    f"Connexion suspecte: {conn.get('process', 'Unknown')} -> "
+                    f"{conn.get('remote_addr', 'Unknown')}:{conn.get('remote_port', 'Unknown')}"
+                )
         
-        # Vérification des indicateurs avec les systèmes de threat intelligence
-        intel.threat_intel_check(investigation_id, ["malware.exe", "bad-domain.com"])
+        # Démarrage de la surveillance
+        logger.info("Démarrage de la surveillance en temps réel...")
+        monitor = SecurityMonitor(analyzer)
+        monitor.start(interval=60)  # Vérification toutes les minutes
         
-        # Génération du rapport final
-        report.generate_report(investigation_id)
-    elif args.mode == "quick":
-        # Mode rapide: uniquement analyse mémoire et collecte basique
-        analyze.memory_forensics(investigation_id)
-        collect.artifact_collection(investigation_id, quick=True)
-        report.generate_report(investigation_id, quick=True)
-
-    utils.log_event(investigation_id, "INVESTIGATION_END", {"status": "completed"})
-    print(f"[+] Investigation terminée. Résultats dans: evidence/{investigation_id}/")
+        # Génération du rapport
+        logger.info("Génération du rapport de sécurité...")
+        report = analyzer.generate_report(
+            format="html",
+            include_network=True,
+            include_processes=True,
+            include_timeline=True
+        )
+        report_file = output_dir / f"rapport_securite_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+        analyzer.save_results(report, str(report_file))
+        logger.info(f"Rapport généré: {report_file}")
+        
+        # Attente de l'utilisateur pour arrêter
+        print("\nSurveillance en cours... Appuyez sur Ctrl+C pour arrêter.")
+        try:
+            while True:
+                pass
+        except KeyboardInterrupt:
+            logger.info("Arrêt de la surveillance...")
+            monitor.stop()
+            
+    except Exception as e:
+        logger.error(f"Erreur lors de l'analyse: {str(e)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

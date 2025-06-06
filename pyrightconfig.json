@@ -1,0 +1,24 @@
+{
+    "include": [
+        "core",
+        "scripts",
+        "tests"
+    ],
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__"
+    ],
+    "ignore": [
+        "core/collect.py",
+        "core/input_validation.py",
+        "setup.py",
+        "scripts/generate_monitoring_report.py"
+    ],
+    "stubPath": "typings",
+    "typeCheckingMode": "basic",
+    "reportMissingImports": false,
+    "reportMissingTypeStubs": false,
+    "reportGeneralTypeIssues": false,
+    "reportAttributeAccessIssue": false,
+    "useLibraryCodeForTypes": true
+} 

@@ -1,3 +1,7 @@
+# IRIS - Système de Détection et Réponse aux Incidents
+
+[![Coverage](https://img.shields.io/badge/coverage-44%25-yellow.svg)](https://github.com/yourusername/IRIS)
+
 ![image](iris.png)
 
 
@@ -7,24 +11,30 @@
 
 IRIS est un outil CLI (Command Line Interface) avancé conçu pour automatiser et standardiser le processus de réponse aux incidents de sécurité informatique. Il permet de :
 
-- Collecte automatisée de preuves
-- Containment dynamique
-- Analyse mémoire intelligente
-- Corrélation IOCs multi-sources
-- Reporting conforme NIST
+* Collecte automatisée de preuves
+* Containment dynamique
+* Analyse mémoire intelligente
+* Corrélation IOCs multi-sources
+* Reporting conforme NIST
 
 ## 📁 Structure du projet
 
 ```
 iris/
 ├── core/
-│   ├── analyze.py
-│   ├── collect.py
-│   ├── contain.py
-│   ├── intel.py
-│   ├── report.py
-│   └── utils.py
-├── iris.py
+│   ├── analyze.py      # Analyse mémoire et comportementale
+│   ├── collect.py      # Collecte de preuves
+│   ├── contain.py      # Containment dynamique
+│   ├── intel.py        # Threat Intelligence
+│   ├── monitor.py      # Surveillance en temps réel
+│   ├── report.py       # Génération de rapports
+│   ├── siem.py         # Intégration SIEM
+│   └── utils.py        # Utilitaires
+├── demo/               # Démonstration
+│   ├── demo.py
+│   ├── requirements.txt
+│   └── README.md
+├── iris.py            # Point d'entrée principal
 ├── requirements.txt
 ├── install.sh
 └── README.md
@@ -33,6 +43,14 @@ iris/
 ## 🛠️ Installation
 
 ```bash
+# Cloner le dépôt
+git clone https://github.com/servais1983/IRIS.git
+cd IRIS
+
+# Installer les dépendances
+pip install -r requirements.txt
+
+# Rendre le script d'installation exécutable
 chmod +x install.sh
 ./install.sh
 ```
@@ -40,36 +58,94 @@ chmod +x install.sh
 ## 🧪 Exécution
 
 ```bash
-python3 iris.py --mode full --output case_2024
+# Mode surveillance continue
+python iris.py
+
+# Mode analyse rapide
+python iris.py --mode quick
+
+# Mode analyse complète
+python iris.py --mode full
+
+# Mode forensique
+python iris.py --mode forensic
 ```
 
-## 🔐 Fonctions
+## 🔐 Fonctionnalités
 
-* **Analyse mémoire** : Utilisation d'algorithmes de machine learning pour détecter les anomalies dans les processus en cours d'exécution
-* **Collecte de preuves** : Capture automatisée des fichiers système critiques avec génération d'empreintes cryptographiques
-* **Isolation Firewall auto** : Blocage automatique des adresses IP malveillantes identifiées
-* **Journalisation horodatée et hachée** : Création d'une chaîne de preuves sécurisée et vérifiable
-* **Threat Intelligence** : Vérification des indicateurs de compromission (IOCs) contre des sources externes comme AlienVault et MISP
-* **Compatible Linux/Windows** : Conçu pour fonctionner sur les plateformes les plus courantes
+### Analyse Mémoire
+* Détection des processus malveillants
+* Analyse des connexions réseau
+* Surveillance des privilèges
+* Liste blanche de processus légitimes
 
-## 📋 Modes d'exécution
+### Surveillance en Temps Réel
+* Monitoring continu des processus
+* Détection des comportements anormaux
+* Alertes en temps réel
+* Journalisation détaillée
 
-IRIS propose trois modes d'exécution :
+### Collecte de Preuves
+* Capture automatisée des fichiers système
+* Génération d'empreintes cryptographiques
+* Horodatage précis
+* Chaîne de preuves sécurisée
 
-* **quick** : Analyse rapide pour une première évaluation
-* **full** : Investigation complète (recommandé)
-* **forensic** : Analyse approfondie pour les enquêtes criminalistiques
+### Containment Dynamique
+* Isolation automatique des menaces
+* Blocage des connexions suspectes
+* Quarantaine des processus malveillants
+* Règles de pare-feu dynamiques
 
-## 📊 Reporting
+### Threat Intelligence
+* Vérification des IOCs
+* Intégration avec AlienVault
+* Corrélation multi-sources
+* Base de données de menaces
 
-Le système génère automatiquement des rapports conformes aux standards du NIST (National Institute of Standards and Technology), facilitant la documentation des incidents et le partage d'informations.
+### Reporting
+* Rapports HTML/JSON
+* Conformité NIST
+* Timeline d'événements
+* Recommandations d'actions
 
-## 🔒 Sécurité et conformité
+## 📊 Modes d'Exécution
 
-IRIS implémente des mécanismes pour garantir l'intégrité des preuves collectées, avec :
-- Hachage SHA-256 de tous les artefacts collectés
-- Horodatage précis des actions
-- Journalisation immuable des événements
+* **Surveillance** : Monitoring continu (par défaut)
+* **Quick** : Analyse rapide pour première évaluation
+* **Full** : Investigation complète
+* **Forensic** : Analyse approfondie
+
+## 🔒 Sécurité
+
+* Hachage SHA-256 des artefacts
+* Horodatage précis
+* Journalisation immuable
+* Intégrité des preuves
+
+## 📊 Exemple de sortie
+
+```
+[+] Démarrage investigation IRIS - ID: case_2024_20240306-123456
+[*] Mode: full
+[*] Dossier de sortie: evidence/case_2024_20240306-123456/
+
+[*] Analyse mémoire en cours...
+[!] 3 processus suspects détectés
+
+[*] Collecte des artefacts...
+[+] 4 artefacts récupérés
+
+[*] Containment réseau...
+[!] 2 IPs bloquées
+
+[*] Vérification Threat Intelligence...
+[*] 3 indicateurs vérifiés
+
+[+] Investigation terminée avec succès!
+[+] Rapport HTML: evidence/case_2024_20240306-123456/report.html
+[+] Rapport Markdown: evidence/case_2024_20240306-123456/report.md
+```
 
 ## ⚠️ Avertissement
 
@@ -78,3 +154,16 @@ Cet outil doit être utilisé par des professionnels qualifiés et autorisés. L
 ## 📄 Licence
 
 Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! N'hésitez pas à :
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/AmazingFeature`)
+3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push sur la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📞 Support
+
+Pour toute question ou problème, veuillez ouvrir une issue sur GitHub.

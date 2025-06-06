@@ -2,6 +2,9 @@ import os
 import hashlib
 import json
 from datetime import datetime
+import logging
+from typing import Dict, Any, Optional
+from rich.logging import RichHandler
 
 def init_session(prefix):
     """
@@ -19,91 +22,108 @@ def init_session(prefix):
     os.makedirs(f"evidence/{folder}", exist_ok=True)
     return folder
 
-def log_event(session, event_type, data):
+def setup_logging():
+    """Configure le système de logging avec Rich"""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(message)s",
+        datefmt="[%X]",
+        handlers=[RichHandler(rich_tracebacks=True)]
+    )
+
+def log_event(investigation_id: str, event_type: str, data: Dict[str, Any]):
     """
-    Enregistre un événement dans le journal de l'investigation avec horodatage et hachage.
+    Enregistre un événement dans le journal de l'investigation.
     
     Args:
-        session (str): Identifiant de la session d'investigation
-        event_type (str): Type d'événement à enregistrer
-        data (dict): Données associées à l'événement
+        investigation_id: ID de l'investigation
+        event_type: Type d'événement
+        data: Données de l'événement
     """
-    log_path = f"evidence/{session}/iris_log.json"
-    entry = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+    log_dir = os.path.join("evidence", investigation_id, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    
+    log_file = os.path.join(log_dir, "investigation.log")
+    
+    event = {
+        "timestamp": datetime.now().isoformat(),
         "type": event_type,
-        "data": data,
-        "hash": hashlib.sha3_256(str(data).encode()).hexdigest()
+        "data": data
     }
     
-    # S'assurer que le dossier existe
-    os.makedirs(os.path.dirname(log_path), exist_ok=True)
-    
-    # Écrire l'entrée dans le journal
-    with open(log_path, 'a') as f:
-        f.write(json.dumps(entry) + "\n")
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(event, ensure_ascii=False) + "\n")
 
-def calculate_file_hash(file_path, algorithms=None):
+def calculate_file_hash(file_path: str) -> Dict[str, Optional[str]]:
     """
-    Calcule les hachages d'un fichier selon plusieurs algorithmes.
+    Calcule les hashes MD5, SHA1 et SHA256 d'un fichier.
     
     Args:
-        file_path (str): Chemin vers le fichier à hacher
-        algorithms (list): Liste des algorithmes à utiliser (défaut: MD5, SHA1, SHA256)
+        file_path: Chemin du fichier
         
     Returns:
-        dict: Dictionnaire des hachages par algorithme
+        Dict contenant les hashes (peuvent être None en cas d'erreur)
     """
-    if algorithms is None:
-        algorithms = ['md5', 'sha1', 'sha256']
-    
-    hashes = {}
-    
-    try:
-        for algorithm in algorithms:
-            if algorithm == 'md5':
-                hash_obj = hashlib.md5()
-            elif algorithm == 'sha1':
-                hash_obj = hashlib.sha1()
-            elif algorithm == 'sha256':
-                hash_obj = hashlib.sha256()
-            else:
-                continue
-                
-            with open(file_path, 'rb') as f:
-                # Lire le fichier par blocs pour gérer les fichiers volumineux
-                for chunk in iter(lambda: f.read(4096), b''):
-                    hash_obj.update(chunk)
-                    
-            hashes[algorithm] = hash_obj.hexdigest()
-    except Exception as e:
-        print(f"[!] Erreur lors du calcul du hachage pour {file_path}: {e}")
-    
-    return hashes
-
-def create_chain_of_custody(session, artifact_path, source_path, collector):
-    """
-    Crée une entrée de chaîne de possession pour un artefact collecté.
-    
-    Args:
-        session (str): Identifiant de la session d'investigation
-        artifact_path (str): Chemin de l'artefact collecté
-        source_path (str): Chemin source original
-        collector (str): Identifiant de la personne ou du système ayant collecté l'artefact
-    """
-    # Calculer les hachages
-    hashes = calculate_file_hash(artifact_path)
-    
-    # Créer l'entrée de chaîne de possession
-    custody_entry = {
-        "artifact": artifact_path,
-        "source": source_path,
-        "collected_by": collector,
-        "collected_at": datetime.utcnow().isoformat() + "Z",
-        "hashes": hashes
+    hashes = {
+        "md5": hashlib.md5(),
+        "sha1": hashlib.sha1(),
+        "sha256": hashlib.sha256()
     }
     
-    # Enregistrer dans le journal
-    log_event(session, "CHAIN_OF_CUSTODY", custody_entry)
+    try:
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                for hash_obj in hashes.values():
+                    hash_obj.update(chunk)
+        
+        return {
+            "md5": hashes["md5"].hexdigest(),
+            "sha1": hashes["sha1"].hexdigest(),
+            "sha256": hashes["sha256"].hexdigest()
+        }
+    except Exception as e:
+        logging.error(f"Erreur lors du calcul des hashes pour {file_path}: {str(e)}")
+        return {
+            "md5": None,
+            "sha1": None,
+            "sha256": None,
+            "error": str(e)
+        }
+
+def create_chain_of_custody(investigation_id: str, file_path: str, original_path: str, collector: str):
+    """
+    Crée une entrée dans la chaîne de possession pour un fichier.
     
-    return custody_entry
+    Args:
+        investigation_id: ID de l'investigation
+        file_path: Chemin du fichier collecté
+        original_path: Chemin original du fichier
+        collector: Identifiant du collecteur
+    """
+    chain_dir = os.path.join("evidence", investigation_id, "chain_of_custody")
+    os.makedirs(chain_dir, exist_ok=True)
+    
+    chain_file = os.path.join(chain_dir, "chain.json")
+    
+    entry = {
+        "timestamp": datetime.now().isoformat(),
+        "file_path": file_path,
+        "original_path": original_path,
+        "collector": collector,
+        "hashes": calculate_file_hash(file_path)
+    }
+    
+    try:
+        if os.path.exists(chain_file):
+            with open(chain_file, "r", encoding="utf-8") as f:
+                chain = json.load(f)
+        else:
+            chain = []
+        
+        chain.append(entry)
+        
+        with open(chain_file, "w", encoding="utf-8") as f:
+            json.dump(chain, f, indent=2, ensure_ascii=False)
+            
+    except Exception as e:
+        logging.error(f"Erreur lors de la création de la chaîne de possession: {str(e)}")

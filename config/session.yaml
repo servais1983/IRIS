@@ -1,0 +1,117 @@
+# Configuration de la gestion des sessions
+
+# Paramètres généraux
+session:
+  timeout_seconds: 3600  # Durée de vie d'une session (1 heure)
+  cleanup_interval_seconds: 300  # Intervalle de nettoyage (5 minutes)
+  max_sessions_per_user: 3  # Nombre maximum de sessions simultanées
+  force_single_session: true  # Force une seule session active par utilisateur
+  extend_on_activity: true  # Prolonge la session à chaque activité
+  idle_timeout_seconds: 1800  # Déconnexion après inactivité (30 minutes)
+  absolute_timeout_seconds: 86400  # Durée maximale d'une session (24 heures)
+
+# Configuration Redis
+redis:
+  host: localhost
+  port: 6379
+  password: ""  # À remplacer par un mot de passe sécurisé
+  db: 0
+  ssl: false
+  timeout: 5
+  max_connections: 10
+
+# Configuration JWT
+jwt:
+  secret: ""  # À remplacer par une clé secrète sécurisée
+  algorithm: "HS256"
+  issuer: "iris"
+  audience: "iris-clients"
+  access_token_expiry: 3600  # 1 heure
+  refresh_token_expiry: 604800  # 7 jours
+
+# Sécurité
+security:
+  ip_whitelist:
+    - "192.168.1.0/24"  # Réseau local
+    - "10.0.0.0/8"  # Réseau privé
+  require_https: true
+  secure_cookies: true
+  http_only_cookies: true
+  same_site: "Strict"
+  csrf_protection: true
+  rate_limit:
+    enabled: true
+    max_requests: 100
+    window_seconds: 60
+
+# Notifications
+notifications:
+  email:
+    enabled: true
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    smtp_user: ""  # À configurer
+    smtp_password: ""  # À configurer
+    from_address: "noreply@iris.com"
+    to_address: "admin@iris.com"
+  slack:
+    enabled: true
+    webhook_url: ""  # À configurer
+    channel: "#security-alerts"
+
+# Événements à notifier
+events:
+  session_created: true
+  session_expired: true
+  session_revoked: true
+  multiple_sessions: true
+  suspicious_activity: true
+  failed_login: true
+  ip_blocked: true
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/session.log"
+  max_size: 10485760  # 10 MB
+  backup_count: 5
+  audit_log: true
+  sensitive_data_masking: true
+
+# Métriques
+metrics:
+  enabled: true
+  prometheus:
+    enabled: true
+    port: 9090
+    path: "/metrics"
+  statsd:
+    enabled: false
+    host: "localhost"
+    port: 8125
+    prefix: "iris.session"
+
+# Surveillance
+monitoring:
+  alert_thresholds:
+    concurrent_sessions: 5
+    failed_logins: 3
+    suspicious_ips: 2
+  anomaly_detection:
+    enabled: true
+    sensitivity: "medium"
+    learning_period_days: 7
+  reporting:
+    daily: true
+    weekly: true
+    monthly: true
+
+# Sauvegarde
+backup:
+  enabled: true
+  interval_hours: 24
+  retention_days: 30
+  compression: true
+  encryption: true
+  location: "backups/sessions" 

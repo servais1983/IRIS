@@ -1,0 +1,54 @@
+{
+    "windows": {
+        "SYSTEM": [
+            "svchost.exe",
+            "System",
+            "smss.exe",
+            "csrss.exe",
+            "wininit.exe",
+            "services.exe",
+            "lsass.exe",
+            "winlogon.exe",
+            "spoolsv.exe"
+        ],
+        "USER": [
+            "explorer.exe",
+            "chrome.exe",
+            "firefox.exe",
+            "msedge.exe",
+            "notepad.exe",
+            "cmd.exe",
+            "powershell.exe"
+        ],
+        "SERVICE": [
+            "spoolsv.exe",
+            "winlogon.exe",
+            "svchost.exe",
+            "lsass.exe",
+            "services.exe"
+        ]
+    },
+    "linux": {
+        "SYSTEM": [
+            "systemd",
+            "init",
+            "kthreadd",
+            "ksoftirqd",
+            "kworker"
+        ],
+        "USER": [
+            "bash",
+            "firefox",
+            "chrome",
+            "terminal",
+            "vim"
+        ],
+        "SERVICE": [
+            "sshd",
+            "apache2",
+            "nginx",
+            "mysql",
+            "postgres"
+        ]
+    }
+} 
